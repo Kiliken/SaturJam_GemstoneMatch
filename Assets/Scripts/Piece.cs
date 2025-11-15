@@ -24,8 +24,8 @@ public class Piece : MonoBehaviour
     public bool IntantiatePiece(sbyte x, sbyte y, bool silet = false)
     {
         color = (sbyte)Random.Range(0, 6);
-        //GetComponent<SpriteRenderer>().material.SetFloat("_CurrentPalette", (float)color);
-        GetComponent<SpriteRenderer>().color = GlobalUtils.pieceColors[color];
+        GetComponent<SpriteRenderer>().material.SetFloat("_CurrentPalette", (float)color);
+        //GetComponent<SpriteRenderer>().color = GlobalUtils.pieceColors[color];
         pos[0] = x;
         pos[1] = y;
 

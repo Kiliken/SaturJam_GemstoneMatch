@@ -24,9 +24,6 @@ public class PuzzleController : MonoBehaviour
     PieceArray[,] pieces;
     bool puzzleChecked = false;
     float timerCheck = 1.5f;
-    float comboTime = float.MinValue;
-
-    public int comboCount = 0;
 
     [SerializeField] float pieceCheckTime = .3f;
     [SerializeField] float comboExpire = 5.0f;
@@ -49,16 +46,6 @@ public class PuzzleController : MonoBehaviour
             timerCheck -= Time.deltaTime;
         }
         else timerCheck = float.MinValue;
-
-        if (comboTime > 0) 
-        {
-            //only if fever
-            comboTime -= Time.deltaTime;
-        }
-        else {
-            comboTime = float.MinValue;
-            comboCount = 0;
-        }
 
         if (!puzzleChecked && timerCheck == float.MinValue)
         {
@@ -393,19 +380,11 @@ public class PuzzleController : MonoBehaviour
         sbyte k = size;
         byte toDeleteCount = 0;
 
-        comboCount++;
-        comboTime = comboExpire;
-
-        Debug.Log($"Size: {size} | Combo: {comboCount}");
-        // catch if GameManager exists
-        //GlobalUtils.AssertDeclaration(FindFirstObjectByType<Beam>()).BeamRange(size, GlobalUtils.GetPosByIndex(x, y, stageSize));
-        //Debug.Log();// beam stuff
 
         PieceArray[] toDelete = new PieceArray[100];
 
         if ((side & 0b0010) != 0) //left
         {
-            bool skipStep = true;
             sbyte[] r = { 0, 0, 0, 0, 0 };
 
             Debug.LogWarning($"R size: {r.Length}");
@@ -425,14 +404,11 @@ public class PuzzleController : MonoBehaviour
                     break;
                 case 4:
                     r[0] = 25;
-                    skipStep = false;
                     break;
                 case 5:
                     r[0] = 25;
                     r[1] = (sbyte)(y - 1 < 0 ? 2 : -1);
                     r[2] = (sbyte)(y + 1 >= stageSize.y ? -2 : 1);
-
-                    skipStep = false;
                     break;
             }
 
@@ -746,362 +722,6 @@ public class PuzzleController : MonoBehaviour
         }
     }
 
-    void IsGoingDownBeam(sbyte x, sbyte y, sbyte size, byte side, bool beam = false)
-    {
-        sbyte k = size;
-        byte toDeleteCount = 0;
-        
-        comboCount++;
-        comboTime = comboExpire;
-
-        Debug.Log($"Size: {size} | Combo: {comboCount}");
-        // catch if GameManager exists
-        //GlobalUtils.AssertDeclaration(FindFirstObjectByType<Beam>()).BeamRange(size, GlobalUtils.GetPosByIndex(x, y, stageSize));
-        //Debug.Log();// beam stuff
-
-        PieceArray[] toDelete = new PieceArray[100];
-
-        if ((side & 0b0010) != 0) //left
-        {
-            bool skipStep = true;
-            bool deleteAll = false;
-            while (k > 0)
-            {
-                k--;
-                //pieces[x, y + k].script.DeletePiece();
-                toDelete[toDeleteCount] = pieces[x + k, y];
-                toDeleteCount++;
-
-                if (!beam)
-                {
-                    switch (size)
-                    {
-                        case 3:
-                            continue;
-                        case 4:
-                            if (k != 1)
-                                continue;
-                            break;
-                        case 5:
-                            continue;
-                    }
-                    
-                } else
-
-                    switch (size)
-                    {
-                        case 3:
-                            if (k != 1)
-                                continue;
-                            break;
-                        case 4:
-                            if (k == 0)
-                                continue;
-                            break;
-                        case 5:
-                            deleteAll = true;
-                            continue;
-                            
-                    }
-
-
-                
-
-                for (int j = stageSize.y - 1; j >= 0; j--)
-                {
-                    toDelete[toDeleteCount] = pieces[x + k, j];
-                    toDeleteCount++;
-                }
-
-            }
-
-
-            // (k == 0 || k == size - 1)
-            // k > 0 && k < size - 1
-
-            k = size;
-            while (k > 0)
-            {
-                k--;
-                //pieces[x, y + k].script.DeletePiece();
-
-                if (!beam)
-                {
-                    switch (size)
-                    {
-                        case 3:
-                            break;
-                        case 4:
-                            if (k == 1)
-                                continue;
-                            break;
-                        case 5:
-                            if (k != 0 || k != size - 1)
-                                continue;
-                            break;
-                    }
-                } else
-
-                switch (size)
-                {
-                    case 3:
-                        if (k == 1)
-                            continue;
-                        break;
-                    case 4:
-                        if (k != 0)
-                            continue;
-                        break;
-                    case 5:
-                            continue;
-                    }
-
-                for (sbyte i = (sbyte)(y - 1); i >= 0; i--)
-                {
-                    Debug.Log($"x: {x}; y: {i}");
-                    //pieces[x, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(x, j, stageSize), Quaternion.identity);
-                    //pieces[x, j].obj.transform.SetParent(transform);
-
-                    pieces[x + k, i].script.MovePiece((sbyte)(x + k), (sbyte)(i + 1), GlobalUtils.GetPosByIndex((sbyte)(x + k), (sbyte)(i + 1), stageSize));
-                    pieces[x + k, i + 1] = pieces[x + k, i];
-                }
-            }
-
-            k = size;
-            while (k > 0)
-            {
-                k--;
-                skipStep = true;
-                //pieces[x, y + k].script.DeletePiece();
-
-                if (!beam)
-                {
-                    switch (size)
-                    {
-                        case 3:
-                            break;
-                        case 4:
-                            if (k == 1)
-                                skipStep = false;
-                            break;
-                        case 5:
-                            if (k != 0 || k != size - 1)
-                                skipStep = false;
-                            break;
-                    }
-                } else
-
-                switch (size)
-                {
-                    case 3:
-                        if (k == 1)
-                            skipStep = false;
-                        break;
-                    case 4:
-                        if (k != 0)
-                            skipStep = false;
-                        break;
-                    case 5:
-                        continue;
-                    }
-
-                if (skipStep)
-                {
-                    pieces[x + k, 0].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(x + k), 0, stageSize), Quaternion.identity);
-                    pieces[x + k, 0].obj.transform.SetParent(transform);
-                    pieces[x + k, 0].script = pieces[x + k, 0].obj.GetComponent<Piece>();
-                    pieces[x + k, 0].script.IntantiatePiece((sbyte)(x + k), 0);
-                }
-                else
-                {
-                    for (int j = stageSize.y - 1; j >= 0; j--)
-                    {
-                        pieces[x + k, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(x + k), (sbyte)j, stageSize), Quaternion.identity);
-                        pieces[x + k, j].obj.transform.SetParent(transform);
-                        pieces[x + k, j].script = pieces[x + k, j].obj.GetComponent<Piece>();
-                        pieces[x + k, j].script.IntantiatePiece((sbyte)(x + k), (sbyte)j);
-                    }
-                }
-
-
-                    
-            }
-
-            if(deleteAll)
-                for (int j = stageSize.y - 1; j >= 0; j--)
-                {
-                    for (int h = stageSize.x - 1; h >= 0; h--)
-                    {
-                        toDelete[toDeleteCount] = pieces[h, j];
-                        toDeleteCount++;
-
-
-                        pieces[h, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(h), (sbyte)j, stageSize), Quaternion.identity);
-                        pieces[h, j].obj.transform.SetParent(transform);
-                        pieces[h, j].script = pieces[h, j].obj.GetComponent<Piece>();
-                        pieces[h, j].script.IntantiatePiece((sbyte)(h), (sbyte)j);
-                    }
-                }
-
-            /*for (sbyte i = 0; i < size; i++)
-            {
-                pieces[i, y].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(i, y, stageSize), Quaternion.identity);
-                pieces[i, y].obj.transform.SetParent(transform);
-                pieces[i, y].script = pieces[i, y].obj.GetComponent<Piece>();
-                pieces[i, y].script.IntantiatePiece(i, y);
-            }*/
-
-            while (toDeleteCount > 0)
-            {
-                toDeleteCount--;
-                //toDelete[k].script.DeletePiece();
-                Destroy(toDelete[toDeleteCount].obj);
-            }
-        }
-
-        if ((side & 0b0100) != 0) //down
-        {
-            bool skipStep = true;
-            bool deleteAll = false;
-            sbyte[] r = { 0,0,0,0,0 };
-
-            Debug.LogWarning($"R size: {r.Length}");
-
-            while (k > 0)
-            {
-                k--;
-                //pieces[x, y + k].script.DeletePiece();
-                toDelete[toDeleteCount] = pieces[x, y + k];
-                toDeleteCount++;
-            }
-
-            if (!beam)
-            {
-                switch (size)
-                {
-                    case 3:
-                        break;
-                    case 4:
-                        r[0] = 25;
-                        skipStep = false;
-                        break;
-                    case 5:
-                        r[0] = 25;
-                        r[1] = (sbyte)(x - 1 < 0 ? 2 : -1);
-                        r[2] = (sbyte)(x + 1 >= stageSize.x ? -2 : 1);
-
-                        skipStep = false;
-                        break;
-                }
-
-            }
-            else
-
-                switch (size)
-                {
-                    case 3:
-                        r[0] = 25;
-                        skipStep = false;
-                        break;
-                    case 4:
-                        r[0] = 25;
-                        r[1] = (sbyte)(x - 1 < 0 ? 2 : -1);
-                        r[2] = (sbyte)(x + 1 >= stageSize.x ? -2 : 1);
-
-                        skipStep = false;
-                        break;
-                    case 5:
-                        deleteAll = true;
-                        break;
-
-                }
-
-            if (!deleteAll)
-            for (int i = 0; i < r.Length; i++)
-            {
-                if (r[i] == 0)
-                    continue;
-
-                if (r[i] == 25)
-                    r[i] = 0;
-
-                for (int j = stageSize.y - 1; j >= 0; j--)
-                {
-                    toDelete[toDeleteCount] = pieces[x + r[i], j];
-                    toDeleteCount++;
-                }
-
-                if (r[i] == 0)
-                    r[i] = 25;
-            }
-            
-            if(!deleteAll)
-            if (skipStep)
-            {
-                if (y != 0)
-                    for (sbyte i = (sbyte)(y - 1); i >= 0; i--)
-                    {
-                        Debug.Log($"x: {x}; y: {i}");
-                        //pieces[x, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(x, j, stageSize), Quaternion.identity);
-                        //pieces[x, j].obj.transform.SetParent(transform);
-
-                        pieces[x, i].script.MovePiece(x, (sbyte)(i + size), GlobalUtils.GetPosByIndex(x, (sbyte)(i + size), stageSize));
-                        pieces[x, i + size] = pieces[x, i];
-                    }
-
-                for (sbyte i = 0; i < size; i++)
-                {
-                    pieces[x, i].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(x, i, stageSize), Quaternion.identity);
-                    pieces[x, i].obj.transform.SetParent(transform);
-                    pieces[x, i].script = pieces[x, i].obj.GetComponent<Piece>();
-                    pieces[x, i].script.IntantiatePiece(x, i);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < r.Length; i++)
-                {
-                    if (r[i] == 0)
-                        continue;
-
-                    if (r[i] == 25)
-                        r[i] = 0;
-
-                    
-                    for (int j = stageSize.y - 1; j >= 0; j--)
-                    {
-                        pieces[x + r[i], j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(x + r[i]), (sbyte)j, stageSize), Quaternion.identity);
-                        pieces[x + r[i], j].obj.transform.SetParent(transform);
-                        pieces[x + r[i], j].script = pieces[x + r[i], j].obj.GetComponent<Piece>();
-                        pieces[x + r[i], j].script.IntantiatePiece((sbyte)(x + r[i]), (sbyte)j);
-                    }
-                }
-            }
-
-            if (deleteAll)
-                for (int j = stageSize.y - 1; j >= 0; j--)
-                {
-                    for (int h = stageSize.x - 1; h >= 0; h--)
-                    {
-                        toDelete[toDeleteCount] = pieces[h, j];
-                        toDeleteCount++;
-
-
-                        pieces[h, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(h), (sbyte)j, stageSize), Quaternion.identity);
-                        pieces[h, j].obj.transform.SetParent(transform);
-                        pieces[h, j].script = pieces[h, j].obj.GetComponent<Piece>();
-                        pieces[h, j].script.IntantiatePiece((sbyte)(h), (sbyte)j);
-                    }
-                }
-
-            while (toDeleteCount > 0)
-            {
-                toDeleteCount--;
-                //toDelete[k].script.DeletePiece();
-                Destroy(toDelete[toDeleteCount].obj);
-            }
-        }
-    }
 
 
 #if false
