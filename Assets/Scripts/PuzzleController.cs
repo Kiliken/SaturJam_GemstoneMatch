@@ -406,116 +406,124 @@ public class PuzzleController : MonoBehaviour
         if ((side & 0b0010) != 0) //left
         {
             bool skipStep = true;
+            sbyte[] r = { 0, 0, 0, 0, 0 };
+
+            Debug.LogWarning($"R size: {r.Length}");
+
             while (k > 0)
             {
                 k--;
                 //pieces[x, y + k].script.DeletePiece();
-                toDelete[toDeleteCount] = pieces[x + k, y];
+                toDelete[toDeleteCount] = pieces[x + k, y ];
                 toDeleteCount++;
-
-                
-                    switch (size)
-                    {
-                        case 3:
-                            continue;
-                        case 4:
-                            if (k != 1)
-                                continue;
-                            break;
-                        case 5:
-                            continue;
-                    }
-               
+            }
 
 
+            switch (size)
+            {
+                case 3:
+                    break;
+                case 4:
+                    r[0] = 25;
+                    skipStep = false;
+                    break;
+                case 5:
+                    r[0] = 25;
+                    r[1] = (sbyte)(y - 1 < 0 ? 2 : -1);
+                    r[2] = (sbyte)(y + 1 >= stageSize.y ? -2 : 1);
+
+                    skipStep = false;
+                    break;
+            }
 
 
-                for (int j = stageSize.y - 1; j >= 0; j--)
+
+
+
+            for (int i = 0; i < r.Length; i++)
+            {
+                if (r[i] == 0)
+                    continue;
+
+                if (r[i] == 25)
+                    r[i] = 0;
+
+                for (int j = stageSize.x - 1; j >= 0; j--)
                 {
-                    toDelete[toDeleteCount] = pieces[x + k, j];
+                    toDelete[toDeleteCount] = pieces[j, y + r[i]];
                     toDeleteCount++;
                 }
 
+                if (r[i] == 0)
+                    r[i] = 25;
             }
 
-
-            // (k == 0 || k == size - 1)
-            // k > 0 && k < size - 1
-
-            k = size;
-            while (k > 0)
+            
+            if (size == 3)
             {
-                k--;
-                //pieces[x, y + k].script.DeletePiece();
-
-               
-                    switch (size)
-                    {
-                        case 3:
-                            break;
-                        case 4:
-                            if (k == 1)
-                                continue;
-                            break;
-                        case 5:
-                            if (k != 0 || k != size - 1)
-                                continue;
-                            break;
-                    }
-                
-
-                for (sbyte i = (sbyte)(y - 1); i >= 0; i--)
+                k = size;
+                while (k > 0)
                 {
-                    Debug.Log($"x: {x}; y: {i}");
-                    //pieces[x, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(x, j, stageSize), Quaternion.identity);
-                    //pieces[x, j].obj.transform.SetParent(transform);
+                    k--;
 
-                    pieces[x + k, i].script.MovePiece((sbyte)(x + k), (sbyte)(i + 1), GlobalUtils.GetPosByIndex((sbyte)(x + k), (sbyte)(i + 1), stageSize));
-                    pieces[x + k, i + 1] = pieces[x + k, i];
+                    for (sbyte i = (sbyte)(y - 1); i >= 0; i--)
+                    {
+                        pieces[x + k, i].script.MovePiece((sbyte)(x + k), (sbyte)(i + 1), GlobalUtils.GetPosByIndex((sbyte)(x + k), (sbyte)(i + 1), stageSize));
+                        pieces[x + k, i + 1] = pieces[x + k, i];
+                    }
                 }
-            }
 
-            k = size;
-            while (k > 0)
-            {
-                k--;
-                skipStep = true;
-                //pieces[x, y + k].script.DeletePiece();
-
-               
-                    switch (size)
-                    {
-                        case 3:
-                            break;
-                        case 4:
-                            if (k == 1)
-                                skipStep = false;
-                            break;
-                        case 5:
-                            if (k != 0 || k != size - 1)
-                                skipStep = false;
-                            break;
-                    }
-
-                if (skipStep)
+                k = size;
+                while (k > 0)
                 {
+                    k--;
                     pieces[x + k, 0].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(x + k), 0, stageSize), Quaternion.identity);
                     pieces[x + k, 0].obj.transform.SetParent(transform);
                     pieces[x + k, 0].script = pieces[x + k, 0].obj.GetComponent<Piece>();
                     pieces[x + k, 0].script.IntantiatePiece((sbyte)(x + k), 0);
                 }
-                else
+            }
+            else
+            {
+                if(size == 4)
                 {
-                    for (int j = stageSize.y - 1; j >= 0; j--)
+                    for (sbyte j = (sbyte)(stageSize.x - 1); j >= 0; j--)
                     {
-                        pieces[x + k, j].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex((sbyte)(x + k), (sbyte)j, stageSize), Quaternion.identity);
-                        pieces[x + k, j].obj.transform.SetParent(transform);
-                        pieces[x + k, j].script = pieces[x + k, j].obj.GetComponent<Piece>();
-                        pieces[x + k, j].script.IntantiatePiece((sbyte)(x + k), (sbyte)j);
+                        for (sbyte i = (sbyte)(y - 1); i >= 0; i--)
+                        {
+                            pieces[j, i].script.MovePiece(j, (sbyte)(i + 1), GlobalUtils.GetPosByIndex(j, (sbyte)(i + 1), stageSize));
+                            pieces[j, i + 1] = pieces[j, i];
+                        }
+
+                        pieces[j, 0].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(j, 0, stageSize), Quaternion.identity);
+                        pieces[j, 0].obj.transform.SetParent(transform);
+                        pieces[j, 0].script = pieces[j, 0].obj.GetComponent<Piece>();
+                        pieces[j, 0].script.IntantiatePiece(j, 0);
                     }
                 }
 
+                if (size == 5)
+                {
+                    for (sbyte j = (sbyte)(stageSize.x - 1); j >= 0; j--)
+                    {
+                        for (sbyte i = (sbyte)(y - 2); i >= 0; i--)
+                        {
+                            pieces[j, i].script.MovePiece(j, (sbyte)(i + 3), GlobalUtils.GetPosByIndex(j, (sbyte)(i + 3), stageSize));
+                            pieces[j, i + 3] = pieces[j, i];
+                        }
+                    }
 
+                    for (sbyte j = (sbyte)(stageSize.x - 1); j >= 0; j--)
+                    {
+                        for (sbyte i = 0; i < 3; i++)
+                        {
+                            pieces[j, i].obj = Instantiate(piecePrefab, GlobalUtils.GetPosByIndex(j, i, stageSize), Quaternion.identity);
+                            pieces[j, i].obj.transform.SetParent(transform);
+                            pieces[j, i].script = pieces[j, i].obj.GetComponent<Piece>();
+                            pieces[j, i].script.IntantiatePiece(j, i);
+                        }
+                    }
+                }
 
             }
 
@@ -530,7 +538,6 @@ public class PuzzleController : MonoBehaviour
         if ((side & 0b0100) != 0) //down
         {
             bool skipStep = true;
-            bool deleteAll = false;
             sbyte[] r = { 0, 0, 0, 0, 0 };
 
             Debug.LogWarning($"R size: {r.Length}");

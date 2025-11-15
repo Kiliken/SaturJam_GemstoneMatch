@@ -15,7 +15,7 @@ public static class GlobalUtils
         new Color32(255, 66, 93, 255),    
         new Color32(255, 241, 89, 255),
     };
-    public static readonly float[] stdOffsets = { -3.3f, 7f };
+    public static readonly float[] stdOffsets = { -3.3f, 6.5f };
     public static float pieceRadius = 1;
 
     //add a fuinction to get puzzle size on vect2dInt
